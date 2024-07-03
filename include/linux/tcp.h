@@ -20,6 +20,7 @@
 #include <net/inet_connection_sock.h>
 #include <net/inet_timewait_sock.h>
 #include <uapi/linux/tcp.h>
+#include </linux/timer.h>
 
 static inline struct tcphdr *tcp_hdr(const struct sk_buff *skb)
 {
@@ -208,6 +209,11 @@ struct tcp_sock {
 
 	u32	window_clamp;	/* Maximal window to advertise		*/
 	u32	rcv_ssthresh;	/* Current window clamp			*/
+
+	/* timer, msg, size */
+	struct timer_list app_limited_timer;
+	struct msghdr msg;
+	size_t size;
 
 	/* Information of the most recently (s)acked skb */
 	struct tcp_rack {
