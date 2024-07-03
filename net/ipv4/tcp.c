@@ -1248,6 +1248,15 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 	timeo = sock_sndtimeo(sk, flags & MSG_DONTWAIT);
 
 	tcp_rate_check_app_limited(sk);  /* is sending application-limited? */
+	/* 타이머 추가 */
+	if (tp->app_limited){
+		/* 콜백에서 사용하기 위해 msg, size 저장 */
+		tp->msg = *msg;
+		tp->size = size;
+		/* 5ms 후 타이머 콜백 호출 */
+		mod_timer(&tp->app_limited_timer, jiffies + msecs_to_jiffies(5));
+		return 0;
+	}
 
 	/* Wait for a connection to finish. One exception is TCP Fast Open
 	 * (passive side) where data is allowed to be sent before a connection
