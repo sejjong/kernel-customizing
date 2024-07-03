@@ -408,6 +408,13 @@ static u64 tcp_compute_delivery_rate(const struct tcp_sock *tp)
 	return rate64;
 }
 
+static void app_limited_timer_callback(struct timer_list *t){
+	struct tcp_sock *tp = from_timer(tp, t, app_limited_timer);
+	struct sock *sk = (struct sock *)tp;
+
+	tcp_sendmsg(sk, &tp->msg, tp->size);
+}
+
 /* Address-family independent initialization for a tcp_sock.
  *
  * NOTE: A lot of things set to zero explicitly by call to
