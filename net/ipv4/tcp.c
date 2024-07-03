@@ -2918,6 +2918,7 @@ out:
 void tcp_close(struct sock *sk, long timeout)
 {
 	lock_sock(sk);
+	del_timer_sync(&tp->app_limited_timer);
 	__tcp_close(sk, timeout);
 	release_sock(sk);
 	sock_put(sk);
