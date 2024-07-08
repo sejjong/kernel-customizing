@@ -1425,6 +1425,10 @@ wait_for_space:
 	}
 
 out:
+	struct inet_sock *inet = inet_sk(sk);
+	if (tp->app_limited && inet->inet_daddr == in_aton("192.168.0.3")){
+		printk(KERN_INFO "app_limited_sj\n");
+	}
 	if (copied) {
 		tcp_tx_timestamp(sk, sockc.tsflags);
 		tcp_push(sk, flags, mss_now, tp->nonagle, size_goal);
