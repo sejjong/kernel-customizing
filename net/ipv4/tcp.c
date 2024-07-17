@@ -1438,6 +1438,16 @@ wait_for_space:
 	}
 
 out:
+	if (tp->app_limited && copied){
+		__be32 daddr = inet_sk(sk)->inet_daddr;
+		// destination address 가 192.168.0.3 인 경우
+		if (ntohl(daddr) == 0xc0a80003){
+			
+			mod_timer(&tp->tcp_push_timer, jiffies + msecs_to_jiffies(3));
+			tcp_tx_timestamp(sk, sockc.tsflags);
+			goto out_nopush;
+		}
+	}
 	if (copied) {
 		tcp_tx_timestamp(sk, sockc.tsflags);
 		tcp_push(sk, flags, mss_now, tp->nonagle, size_goal);
