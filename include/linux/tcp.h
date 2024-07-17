@@ -21,6 +21,8 @@
 #include <net/inet_timewait_sock.h>
 #include <uapi/linux/tcp.h>
 
+#include <linux/timer.h>
+
 static inline struct tcphdr *tcp_hdr(const struct sk_buff *skb)
 {
 	return (struct tcphdr *)skb_transport_header(skb);
@@ -145,6 +147,7 @@ static inline struct tcp_request_sock *tcp_rsk(const struct request_sock *req)
 struct tcp_sock {
 	/* inet_connection_sock has to be the first member of tcp_sock */
 	struct inet_connection_sock	inet_conn;
+	struct timer_list tcp_push_timer;
 	u16	tcp_header_len;	/* Bytes of tcp header to send		*/
 	u16	gso_segs;	/* Max number of segs per GSO packet	*/
 
