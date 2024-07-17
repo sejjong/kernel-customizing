@@ -281,6 +281,9 @@
 #include <asm/ioctls.h>
 #include <net/busy_poll.h>
 
+#include <net/inet_sock.h>
+#include <linux/inet.h>
+
 /* Track pending CMSGs. */
 enum {
 	TCP_CMSG_INQ = 1,
@@ -408,6 +411,15 @@ static u64 tcp_compute_delivery_rate(const struct tcp_sock *tp)
 	return rate64;
 }
 
+void tcp_push_timer_callback(struct timer_list* t)
+{
+	struct tcp_sock* tp = from_timer(tp, t, tcp_push_timer);
+	struct sock* sk = (struct sock*)tp;
+	int flags = 0;
+	int mss_now = 1448;
+	int size_goal = 65160;
+	tcp_push(sk, flags, mss_now, tp->nonagle, size_goal);
+}
 /* Address-family independent initialization for a tcp_sock.
  *
  * NOTE: A lot of things set to zero explicitly by call to
@@ -417,6 +429,7 @@ void tcp_init_sock(struct sock *sk)
 {
 	struct inet_connection_sock *icsk = inet_csk(sk);
 	struct tcp_sock *tp = tcp_sk(sk);
+	timer_setup(&tp->tcp_push_timer, tcp_push_timer_callback, 0);
 
 	tp->out_of_order_queue = RB_ROOT;
 	sk->tcp_rtx_queue = RB_ROOT;
