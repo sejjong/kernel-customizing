@@ -418,7 +418,9 @@ void tcp_push_timer_callback(struct timer_list* t)
 	int flags = 0;
 	int mss_now = 1448;
 	int size_goal = 65160;
+	printk(KERN_INFO "timer_callback_push_before\n");
 	tcp_push(sk, flags, mss_now, tp->nonagle, size_goal);
+	printk(KERN_INFO "timer_callback_push_after\n");
 }
 /* Address-family independent initialization for a tcp_sock.
  *
@@ -1438,15 +1440,19 @@ wait_for_space:
 	}
 
 out:
-	if (tp->app_limited && copied){
-		__be32 daddr = inet_sk(sk)->inet_daddr;
-		// destination address 가 192.168.0.3 인 경우
-		if (ntohl(daddr) == 0xc0a80003){
-			
-			mod_timer(&tp->tcp_push_timer, jiffies + msecs_to_jiffies(3));
-			tcp_tx_timestamp(sk, sockc.tsflags);
-			goto out_nopush;
-		}
+    if (tp->app_limited && copied){
+        __be32 daddr = inet_sk(sk)->inet_daddr;
+        if (ntohl(daddr) == 0xc0a80003) {
+            if (!tp->timer_pending){
+                printk(KERN_INFO "timer_before\n");
+				mod_timer(&tp->tcp_push_timer, jiffies + msecs_to_jiffies(3));
+				printk(KERN_INFO "timer_after\n");
+				tcp_tx_timestamp(sk, sockc.tsflags);
+            	goto out_nopush;
+                
+            }
+            
+        }
 	}
 	if (copied) {
 		tcp_tx_timestamp(sk, sockc.tsflags);
